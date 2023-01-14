@@ -38,6 +38,7 @@ local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kitzo
 local window = library:CreateWindow(Config, game:GetService("CoreGui"))
 local mainTab = window:CreateTab("Countryball World")
 
+
 getgenv().settings = {
     placeholder = false
 }
@@ -58,3 +59,132 @@ local function saveSettings()
         writefile("Rogue Hub/Configs/CountryRP_Config.ROGUEHUB", game:GetService("HttpService"):JSONEncode(getgenv().settings))
     end
 end
+
+-- Extra
+ocal infoTab = window:CreateTab("Extra")
+local uiSec = infoTab:CreateSection("UI Settings")
+
+local uiColor = uiSec:CreateColorpicker("UI Color", function(color)
+	window:ChangeColor(color)
+end)
+
+uiColor:UpdateColor(Config.Color)
+
+local uiTog = uiSec:CreateToggle("UI Toggle", nil, function(bool)
+	window:Toggle(bool)
+end)
+
+uiTog:CreateKeybind(tostring(Config.Keybind):gsub("Enum.KeyCode.", ""), function(key)
+	if key == "Escape" or key == "Backspace" then key = "NONE" end
+	
+    if key == "NONE" then return else Config.Keybind = Enum.KeyCode[key]; writefile("/Rogue Hub/Configs/Keybind.ROGUEHUB", game:GetService("HttpService"):JSONEncode({Key = key})) end
+end)
+
+uiTog:SetState(true)
+
+local uiRainbow = uiSec:CreateToggle("Rainbow UI", nil, function(bool)
+	getgenv().rainbowUI = bool
+    
+    while getgenv().rainbowUI and task.wait() do
+        local hue = tick() % 10 / 10
+        local rainbow = Color3.fromHSV(hue, 1, 1)
+            
+        window:ChangeColor(rainbow)
+        uiColor:UpdateColor(rainbow)
+    end
+end)
+local infoSec = infoTab:CreateSection("Credits")
+
+local req = http_request or request or syn.request
+
+infoSec:CreateButton("Founder of Rogue Hub: Kitzoon#7750", function()
+    setclipboard("Kitzoon#7750")
+    
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Rogue Hub Note",
+        Text = "Copied Kitzoon's discord username and tag to your clipboard.",
+        Duration = 5
+    })
+end)
+infoSec:CreateButton("Rogue Hub Plus: StoneNicolas93#0001", function()
+    setclipboard("StoneNicolas93#0001")
+    
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Rogue Hub Note",
+        Text = "Copied StoneNicolas93's discord username and tag to your clipboard.",
+        Duration = 5
+    })
+end)
+
+infoSec:CreateButton("Help with a lot: Kyron#6083", function()
+    setclipboard("Kyron#6083")
+    
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Rogue Hub Note",
+        Text = "Copied Kyron's discord username and tag to your clipboard.",
+        Duration = 5
+    })
+end)
+
+infoSec:CreateButton("God of finding exploits: BluBambi#9867", function()
+    setclipboard("BluBambi#9867")
+    
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Rogue Hub Note",
+        Text = "Copied BluBambi's discord username and tag to your clipboard.",
+        Duration = 5
+    })
+end)
+
+
+infoSec:CreateButton("Consider donating on PayPal!", function()
+    setclipboard("https://paypal.me/RogueHub")
+    
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Rogue Hub Note",
+        Text = "Copied our PayPal donate page to your clipboard, donate any amount to it!",
+        Duration = 5
+    })
+end)
+
+infoSec:CreateButton("Consider donating on Bitcoin!", function()
+    setclipboard("bc1qh8axzk8udu7apye7l384s5m6rt4d24rdwgkkcz")
+    
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Rogue Hub Note",
+        Text = "Copied our Bitcoin address to your clipboard, donate any amount to it!",
+        Duration = 5
+    })
+end)
+
+infoSec:CreateButton("Join us on discord!", function()
+	if req then
+        req({
+            Url = "http://127.0.0.1:6463/rpc?v=1",
+            Method = "POST",
+            
+            Headers = {
+                ["Content-Type"] = "application/json",
+                ["origin"] = "https://discord.com",
+            },
+                    
+            Body = game:GetService("HttpService"):JSONEncode(
+            {
+                ["args"] = {
+                ["code"] = "c4xWZ4G4bx",
+                },
+                
+                ["cmd"] = "INVITE_BROWSER",
+                ["nonce"] = "."
+            })
+        })
+    else
+        setclipboard("https://discord.gg/c4xWZ4G4bx")
+    
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Rogue Hub Note",
+            Text = "Copied our discord server to your clipboard.",
+            Duration = 5
+        })
+    end
+end)
