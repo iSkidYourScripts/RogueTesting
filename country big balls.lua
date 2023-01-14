@@ -1,4 +1,5 @@
 -- he is a pro blu bamber guys
+-- 2p (dont mind this)
 if getgenv().Rogue_AlreadyLoaded ~= nil then error("Rogue Hub was already found running or you have other scripts executed!") return else getgenv().Rogue_AlreadyLoaded = 0 end
 getgenv().isLoaded = false
 
