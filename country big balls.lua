@@ -45,8 +45,8 @@ getgenv().settings = {
     jumpPowerTog = false,
     jumpPower = 60,
     -- THEMES
-    theme = nil,
-    color = nil
+    theme = "Default",
+    color = Color3.fromRGB(201, 144, 150)
 }
 
 if makefolder and isfolder and not isfolder("Rogue Hub") then
@@ -71,34 +71,29 @@ if getgenv().settings.color ~= nil then
     window:ChangeColor(getgenv().settings.color)
     print("Loaded ThemeColor")
 end
-if getgenv().settings.theme ~= nil then
-    if getgenv().settings.theme == "Default" then
-        window:SetBackground("2151741365")
-        print("Loaded ThemeBackground")
-    elseif getgenv().settings.theme == "Hearts" then
-        window:SetBackground("6073763717")
-        print("Loaded ThemeBackground")
-    elseif getgenv().settings.theme == "Abstract" then
-        window:SetBackground("6073743871")
-        print("Loaded ThemeBackground")
-    elseif getgenv().settings.theme == "Hexagon" then
-        window:SetBackground("6073628839")
-        print("Loaded ThemeBackground")
-    elseif getgenv().settings.theme == "Circles" then
-        window:SetBackground("6071579801")
-        print("Loaded ThemeBackground")
-    elseif getgenv().settings.theme == "Lace With Flowers" then
-        window:SetBackground("6071575925")
-        print("Loaded ThemeBackground")
-    elseif getgenv().settings.theme == "Floral" then
-        window:SetBackground("5553946656")
-        print("Loaded ThemeBackground")
-    end
-else
-    getgenv().settings.theme = "Default"
+
+if getgenv().settings.theme == "Default" then
+    window:SetBackground("2151741365")
+    print("Loaded ThemeBackground")
+elseif getgenv().settings.theme == "Hearts" then
+    window:SetBackground("6073763717")
+    print("Loaded ThemeBackground")
+elseif getgenv().settings.theme == "Abstract" then
+    window:SetBackground("6073743871")
+    print("Loaded ThemeBackground")
+elseif getgenv().settings.theme == "Hexagon" then
+    window:SetBackground("6073628839")
+    print("Loaded ThemeBackground")
+elseif getgenv().settings.theme == "Circles" then
+    window:SetBackground("6071579801")
+    print("Loaded ThemeBackground")
+elseif getgenv().settings.theme == "Lace With Flowers" then
+    window:SetBackground("6071575925")
+    print("Loaded ThemeBackground")
+elseif getgenv().settings.theme == "Floral" then
+    window:SetBackground("5553946656")
+    print("Loaded ThemeBackground")
 end
-
-
 
 
 -- Player
