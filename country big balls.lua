@@ -1,5 +1,4 @@
 -- he is a pro blu bamber guys
--- 2p (dont mind this)
 if getgenv().Rogue_AlreadyLoaded ~= nil then error("Rogue Hub was already found running or you have other scripts executed!") return else getgenv().Rogue_AlreadyLoaded = 0 end
 getgenv().isLoaded = false
 
@@ -41,7 +40,13 @@ local mainTab = window:CreateTab("Countryball World")
 
 
 getgenv().settings = {
-    placeholder = false
+    walkSpeed = 20,
+    walkSpeedTog = false,
+    jumpPowerTog = false,
+    jumpPower = 60,
+    -- THEMES
+    theme = nil,
+    color = nil
 }
 
 if makefolder and isfolder and not isfolder("Rogue Hub") then
@@ -61,12 +66,107 @@ local function saveSettings()
     end
 end
 
+-- Load Themes
+if getgenv().settings.color ~= nil then 
+    window:ChangeColor(getgenv().settings.color)
+    print("Loaded ThemeColor")
+end
+if getgenv().settings.theme ~= nil then
+    if getgenv().settings.theme == "Default" then
+        window:SetBackground("2151741365")
+        print("Loaded ThemeBackground")
+    elseif getgenv().settings.theme == "Hearts" then
+        window:SetBackground("6073763717")
+        print("Loaded ThemeBackground")
+    elseif getgenv().settings.theme == "Abstract" then
+        window:SetBackground("6073743871")
+        print("Loaded ThemeBackground")
+    elseif getgenv().settings.theme == "Hexagon" then
+        window:SetBackground("6073628839")
+        print("Loaded ThemeBackground")
+    elseif getgenv().settings.theme == "Circles" then
+        window:SetBackground("6071579801")
+        print("Loaded ThemeBackground")
+    elseif getgenv().settings.theme == "Lace With Flowers" then
+        window:SetBackground("6071575925")
+        print("Loaded ThemeBackground")
+    elseif getgenv().settings.theme == "Floral" then
+        window:SetBackground("5553946656")
+        print("Loaded ThemeBackground")
+    end
+else
+    getgenv().settings.theme = "Default"
+end
+
+
+
+
+-- Player
+local plrSec = mainTab:CreateSection("Player")
+
+local togspeed = plrSec:CreateToggle("Walk Speed", getgenv().settings.walkSpeedTog or false, function(bool)
+    getgenv().settings.walkSpeedTog = bool
+    saveSettings()
+    
+    if getgenv().settings.walkSpeedTog then
+        localPlr.Character.Humanoid.WalkSpeed = getgenv().settings.walkSpeed
+    else
+        localPlr.Character.Humanoid.WalkSpeed = 20
+    end
+end)
+
+togspeed:AddToolTip("Toggles between the default walkspeed and your set walkspeed.")
+
+local wsSlider = plrSec:CreateSlider("Walk Speed", 20,300,getgenv().settings.walkSpeed or 20,true, function(value)
+	getgenv().settings.walkSpeed = value
+    saveSettings()
+    
+    if getgenv().settings.walkSpeedTog then
+        localPlr.Character.Humanoid.WalkSpeed = getgenv().settings.walkSpeed
+    else
+        localPlr.Character.Humanoid.WalkSpeed = 20
+    end
+end)
+
+wsSlider:AddToolTip("Change your humanoid's WalkSpeed value.")
+
+local jumpPowerTog = plrSec:CreateToggle("Jump Power", getgenv().settings.jumpPowerTog or false, function(bool)
+    getgenv().settings.jumpPowerTog = bool
+    saveSettings()
+    if getgenv().settings.jumpPowerTog then
+        localPlr.Character.Humanoid.JumpPower = getgenv().settings.jumpPower
+        localPlr.Character.Humanoid.UseJumpPower = true
+    else
+        localPlr.Character.Humanoid.JumpPower = 50
+        localPlr.Character.Humanoid.UseJumpPower = true
+    end
+end)
+
+jumpPowerTog:AddToolTip("Toggles between the default jump power and your set jump power.")
+
+local jpSlider = plrSec:CreateSlider("Jump Power", 50,120,getgenv().settings.jumpPower or 50,true, function(value)
+	getgenv().settings.jumpPower = value
+    saveSettings()
+    
+    if getgenv().settings.jumpPowerTog then
+        localPlr.Character.Humanoid.JumpPower = getgenv().settings.jumpPower
+        localPlr.Character.Humanoid.UseJumpPower = true
+    else
+        localPlr.Character.Humanoid.JumpPower = 50
+        localPlr.Character.Humanoid.UseJumpPower = true
+    end
+end)
+
+jpSlider:AddToolTip("Change your humanoid's Jump Power value.")
+
 -- Extra
-ocal infoTab = window:CreateTab("Extra")
+
+local infoTab = window:CreateTab("Extra")
 local uiSec = infoTab:CreateSection("UI Settings")
 
 local uiColor = uiSec:CreateColorpicker("UI Color", function(color)
 	window:ChangeColor(color)
+    getgenv().settings.color = color
 end)
 
 uiColor:UpdateColor(Config.Color)
@@ -189,3 +289,52 @@ infoSec:CreateButton("Join us on discord!", function()
         })
     end
 end)
+
+-- Customization
+
+local themeSec = infoTab:CreateSection("Themes")
+local themeBG = themeSec:CreateDropdown("Background", {"Default","Hearts","Abstract","Hexagon","Circles","Lace With Flowers","Floral"}, function(Name)
+    if Name == "Default" then
+		window:SetBackground("2151741365")
+        getgenv().settings.theme = Name
+	elseif Name == "Hearts" then
+		window:SetBackground("6073763717")
+        getgenv().settings.theme = Name
+	elseif Name == "Abstract" then
+		window:SetBackground("6073743871")
+        getgenv().settings.theme = Name
+	elseif Name == "Hexagon" then
+		window:SetBackground("6073628839")
+        getgenv().settings.theme = Name
+	elseif Name == "Circles" then
+		window:SetBackground("6071579801")
+        getgenv().settings.theme = Name
+	elseif Name == "Lace With Flowers" then
+		window:SetBackground("6071575925")
+        getgenv().settings.theme = Name
+	elseif Name == "Floral" then
+		window:SetBackground("5553946656")
+        getgenv().settings.theme = Name
+	end
+end)
+themeBG:AddToolTip("Change the background design of Rogue Hub.")
+local resetDefault = themeSec:CreateButton("Reset to Default", function()
+    window:SetBackground("2151741365")
+end)
+resetDefault:AddToolTip("Resets the Background settings to default")
+
+-- Debug
+local debugSec = infoTab:CreateSection("Debug")
+local forceUnload = debugSec:CreateButton("Force Unload", function()
+    getgenv().Rogue_AlreadyLoaded = nil
+end)
+forceUnload:AddToolTip("Reverts the Rogue_AlreadyLoaded value for debug purposes.")
+
+local deleteUI = debugSec:CreateButton("Delete UI", function()
+    getgenv().Rogue_AlreadyLoaded = nil
+    window:Destroy()
+end)
+
+deleteUI:AddToolTip("Removes the Rogue Hub UI.")
+
+
