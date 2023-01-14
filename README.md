@@ -1,2 +1,3 @@
-# RogueTesting
-testing custom game support for rogue hub
+# 🧪 Rogue Testing Repo
+Testing custom game support for Rogue Hub here.
+
