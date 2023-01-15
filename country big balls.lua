@@ -1,22 +1,7 @@
--- he is a pro blu bamber guys
 if getgenv().Rogue_AlreadyLoaded ~= nil then error("Rogue Hub was already found running or you have other scripts executed!") return else getgenv().Rogue_AlreadyLoaded = 0 end
+
 getgenv().isLoaded = false
-
--- easter egg moment
-if syn then
-    print("Synapse X user detected! :D")
-end
-
-local teleportFunc = queueonteleport or queue_on_teleport or syn and syn.queue_on_teleport
-
-if teleportFunc then
-    teleportFunc([[loadstring(game:HttpGet("https://raw.githubusercontent.com/Kitzoon/Rogue-Hub/main/Main.lua", true))()]])
-end
-
--- typing detector
-game:GetService("UserInputService").InputBegan:Connect(function(input, typing)
-    isTyping = typing
-end)
+getgenv().lastTick = tick()
 
 local sound = Instance.new("Sound", workspace)
 sound.SoundId = "rbxassetid://1548304764"
@@ -34,10 +19,12 @@ local Config = {
 }
 
 local localPlr = game:GetService("Players").LocalPlayer
+
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kitzoon/Rogue-Hub/main/Libs/BracketV3.lua"))()
+local notifLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kitzoon/Rogue-Hub/main/Libs/Notifications.lua"))()
+
 local window = library:CreateWindow(Config, game:GetService("CoreGui"))
 local mainTab = window:CreateTab("Countryball World")
-
 
 getgenv().settings = {
     walkSpeed = 20,
@@ -45,9 +32,11 @@ getgenv().settings = {
     jumpPowerTog = false,
     jumpPower = 60,
     fly = false,
+    moneyAmount = 0,
+    
     -- TROLLING
 
-    rpName = " ",
+    rpName = "",
     changeRPNames = false,
 
     -- THEMES
@@ -72,10 +61,9 @@ local function saveSettings()
     end
 end
 
+-- Movement
 
-
--- Player
-local plrSec = mainTab:CreateSection("Player")
+local plrSec = mainTab:CreateSection("Movement")
 
 local togspeed = plrSec:CreateToggle("Walk Speed", getgenv().settings.walkSpeedTog or false, function(bool)
     getgenv().settings.walkSpeedTog = bool
@@ -132,25 +120,23 @@ end)
 
 jpSlider:AddToolTip("Change your humanoid's Jump Power value.")
 
-local flyTog = plrSec:CreateToggle("Fly", nil, function(bool)
+local flyTog = plrSec:CreateToggle("Player Fly", false, function(bool)
     getgenv().settings.fly = bool
-    if bool then
+    
+    if getgenv().settings.fly then
         -- Credit to Adonis Admin (old)
         repeat wait()
         until game.Players.LocalPlayer and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:findFirstChild("Torso") and game.Players.LocalPlayer.Character:findFirstChild("Humanoid")
         local mouse = game.Players.LocalPlayer:GetMouse()
         repeat wait() until mouse
         local plr = game.Players.LocalPlayer
-        if getgenv().settings.fly == false then
-            return
-        end
         local torso = plr.Character.Torso
-        local flying = true
+        local flying = getgenv().settings.fly
         local deb = true
         local ctrl = {f = 0, b = 0, l = 0, r = 0}
         local lastctrl = {f = 0, b = 0, l = 0, r = 0}
         local maxspeed = 50
-        local speed = 0
+        local speed = 50
     
         function Fly()
             local bg = Instance.new("BodyGyro", torso)
@@ -167,11 +153,11 @@ local flyTog = plrSec:CreateToggle("Fly", nil, function(bool)
                     if speed > maxspeed then
                         speed = maxspeed
                     end
-                elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
-                    speed = speed-1
-                    if speed < 0 then
-                        speed = 0
-                    end
+                -- elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
+                --     speed = speed-1
+                --     if speed < 0 then
+                --         speed = 0
+                --     end
                 end
                 if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
                     bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
@@ -218,7 +204,7 @@ local flyTog = plrSec:CreateToggle("Fly", nil, function(bool)
                 ctrl.r = 0
             end
         end)
-        Fly()    
+        Fly()
     end
 end)
 
@@ -246,23 +232,23 @@ tpDrop:AddToolTip("Select a destination to travel across the map to that locatio
 
 -- Currency
 local curSec = mainTab:CreateSection('Currency')
-local infMoney = curSec:CreateTextBox("Amount", "Enter Amount", false, function(str)
-    -- The game handles prices on the Client, therefore a local change is good enough.
-    game:GetService("Players").LocalPlayer.leaderstats.Money.Value = tonumber(str)
+
+local amountOfMoney = curSec:CreateTextBox("Amount", "Enter Amount", false, function(str)
+    getgenv().settings.moneyAmount = str
 end)
-infMoney:AddToolTip("Sets your money to the amount specified.")
 
 local setMoney = curSec:CreateButton("Set Money", function()
-    -- the amount was already set, this is just a decoration lmao
+    game:GetService("Players").LocalPlayer.leaderstats.Money.Value = getgenv().settings.moneyAmount
 end)
+
 setMoney:AddToolTip("Gives you the amount of money specified.")
 
 local infmoney = curSec:CreateButton("Infinite Money", function()
-    -- Again, the game handles prices on the client.
-    game:GetService("Players").LocalPlayer.leaderstats.Money.Value = math.huge
+    -- The game handles prices on the client. (edit from kitzoon: math.huge sets your money to 0 for some reason)
+    game:GetService("Players").LocalPlayer.leaderstats.Money.Value = 99999999999999999
 end)
-infmoney:AddToolTip("Gives you unlimited in-game money.")
 
+infmoney:AddToolTip("Gives you unlimited in-game money.")
 
 -- Items
 
@@ -270,12 +256,13 @@ local itemSec = mainTab:CreateSection("Items")
 local btools = itemSec:CreateButton("F3X Building Tools", function()
     local args = {
         [1] = game:GetService("ReplicatedStorage").Tools.Btools,
-        [2] = game:GetService("ReplicatedStorage").VoteValues.V1936
+        [2] = game:GetService("ReplicatedStorage").Tools.Burger.Cost
     }
     
     game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
 end)
-btools:AddToolTip("Gives you F3X Building Tools that work Serverside.")
+
+btools:AddToolTip("Gives you F3X Building Tools that work Serverside. (Must afford Burger)")
 
 local bucket = itemSec:CreateButton("Paint Bucket", function()
     local args = {
@@ -286,57 +273,51 @@ local bucket = itemSec:CreateButton("Paint Bucket", function()
     game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
     
 end)
-bucket:AddToolTip("Gives you the Paint Bucket tool, and works Serverside.")
+
+bucket:AddToolTip("Gives you the Paint Bucket tool, and works Serverside. (Must afford Burger)")
+
 local weapon = itemSec:CreateButton("M16A1 Weapon", function()
     local args = {
         [1] = game:GetService("ReplicatedStorage").Tools.M16A1,
-        [2] = game:GetService("ReplicatedStorage").VoteValues.V1936
+        [2] = game:GetService("ReplicatedStorage").Tools.Burger.Cost
     }
     
     game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
     
     
 end)
-weapon:AddToolTip("Gives you an M16A1, works Serverside.")
+
+weapon:AddToolTip("Gives you an M16A1, works Serverside. (Must afford Burger)")
 
 local boombox = itemSec:CreateButton("Free Boombox", function()
     local args = {
         [1] = game:GetService("ReplicatedStorage").Tools.Boombox,
-        [2] = game:GetService("ReplicatedStorage").VoteValues.V1936
+        [2] = game:GetService("ReplicatedStorage").Tools.Burger.Cost
     }
     
     game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
-    
-    
-    
-end)
-boombox:AddToolTip("Gives you a free Boombox, works Serverside, and everyone can hear it.")
-
-itemSec:CreateButton("Give All Items", function()
-    for i, v in pairs(game:GetService("ReplicatedStorage").Tools:GetChildren()) do
-        local args = {
-            [1] = v,
-            [2] = game:GetService("ReplicatedStorage").VoteValues.V1936
-        }
-        game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
-    end
 end)
 
-
-
+boombox:AddToolTip("Gives you a free Boombox, works Serverside, and everyone can hear it. (Must afford Burger)")
 
 -- Trolling
 
 local trollingSec = mainTab:CreateSection("Trolling")
+
 local displayBox = trollingSec:CreateTextBox("Roleplay Name", "Enter Text", false, function(String)
     getgenv().settings.rpName = String
+    saveSettings()
 end)
+
+displayBox:SetValue(getgenv().settings.rpName or "")
 displayBox:AddToolTip("Sets the text to change everyone's roleplay name.")
 
-local activateRP = trollingSec:CreateToggle("Change RP Names", nil, function(v)
+local activateRP = trollingSec:CreateToggle("Change RP Names", false, function(v)
     getgenv().settings.changeRPNames = v
 end)
+
 activateRP:AddToolTip("Changes everyone's roleplay name to whatever is in the textbox.")
+
 -- Extra
 
 local infoTab = window:CreateTab("Extra")
@@ -372,68 +353,27 @@ local uiRainbow = uiSec:CreateToggle("Rainbow UI", nil, function(bool)
         uiColor:UpdateColor(rainbow)
     end
 end)
+
 local infoSec = infoTab:CreateSection("Credits")
 
 local req = http_request or request or syn.request
 
 infoSec:CreateButton("Founder of Rogue Hub: Kitzoon#7750", function()
     setclipboard("Kitzoon#7750")
-    
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Rogue Hub Note",
-        Text = "Copied Kitzoon's discord username and tag to your clipboard.",
-        Duration = 5
-    })
+
+    notifLib:Notification("Copied Kitzoon's discord username and tag to your clipboard.", 5)
 end)
+
 infoSec:CreateButton("Rogue Hub Plus: StoneNicolas93#0001", function()
     setclipboard("StoneNicolas93#0001")
-    
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Rogue Hub Note",
-        Text = "Copied StoneNicolas93's discord username and tag to your clipboard.",
-        Duration = 5
-    })
+
+    notifLib:Notification("Copied StoneNicolas discord username and tag to your clipboard.", 5)
 end)
 
 infoSec:CreateButton("Help with a lot: Kyron#6083", function()
     setclipboard("Kyron#6083")
     
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Rogue Hub Note",
-        Text = "Copied Kyron's discord username and tag to your clipboard.",
-        Duration = 5
-    })
-end)
-
-infoSec:CreateButton("God of finding exploits: BluBambi#9867", function()
-    setclipboard("BluBambi#9867")
-    
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Rogue Hub Note",
-        Text = "Copied BluBambi's discord username and tag to your clipboard.",
-        Duration = 5
-    })
-end)
-
-
-infoSec:CreateButton("Consider donating on PayPal!", function()
-    setclipboard("https://paypal.me/RogueHub")
-    
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Rogue Hub Note",
-        Text = "Copied our PayPal donate page to your clipboard, donate any amount to it!",
-        Duration = 5
-    })
-end)
-
-infoSec:CreateButton("Consider donating on Bitcoin!", function()
-    setclipboard("bc1qh8axzk8udu7apye7l384s5m6rt4d24rdwgkkcz")
-    
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Rogue Hub Note",
-        Text = "Copied our Bitcoin address to your clipboard, donate any amount to it!",
-        Duration = 5
-    })
+    notifLib:Notification("Copied Kyron's discord username and tag to your clipboard.", 5)
 end)
 
 infoSec:CreateButton("Join us on discord!", function()
@@ -459,14 +399,53 @@ infoSec:CreateButton("Join us on discord!", function()
         })
     else
         setclipboard("https://discord.gg/c4xWZ4G4bx")
-    
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Rogue Hub Note",
-            Text = "Copied our discord server to your clipboard.",
-            Duration = 5
-        })
+        
+        notifLib:Notification("Copied our discord server to your clipboard.", 5)
     end
 end)
+
+-- Misc
+local miscSec = infoTab:CreateSection("Miscellaneous")
+local zoomBackup = localPlr.CameraMaxZoomDistance
+
+local server = miscSec:CreateButton("Serverhop", function()
+    -- credits to: inf yield for there serverhop
+    local serverList = {}
+    
+    for _, v in ipairs(game:GetService("HttpService"):JSONDecode(game:HttpGetAsync("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")).data) do
+    	if v.playing and type(v) == "table" and v.maxPlayers > v.playing and v.id ~= game.JobId then
+    		serverList[#serverList + 1] = v.id
+    	end
+    end
+    
+    if #serverList > 0 then
+    	game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, serverList[math.random(1, #serverList)])
+    else
+        error("No servers found")
+    end
+end)
+
+server:AddToolTip("Joins a different server than the one you're currently in.")
+
+local camZoom = miscSec:CreateToggle("Infinite Zoom", false, function(bool)
+    if bool then
+        localPlr.CameraMaxZoomDistance = math.huge
+    else
+        localPlr.CameraMaxZoomDistance = zoomBackup
+    end
+end)
+
+camZoom:AddToolTip("Lets you infinitely change your camera's zoom.")
+
+local asset = getcustomasset or syn and getsynasset
+
+if asset and isfile and writefile then
+    local soundsToggled = miscSec:CreateToggle("Toggle Sounds", false, function(bool)
+        getgenv().settings.toggleSounds = bool
+    end)
+    
+    soundsToggled:AddToolTip("plays a sound when enabling or disabling a feature.")
+end
 
 -- Customization
 
@@ -495,17 +474,25 @@ local themeBG = themeSec:CreateDropdown("Background", {"Default","Hearts","Abstr
         getgenv().settings.theme = Name
 	end
 end)
+
 themeBG:AddToolTip("Change the background design of Rogue Hub.")
+
 local resetDefault = themeSec:CreateButton("Reset to Default", function()
     window:SetBackground("2151741365")
+    themeBG:SetOption("Default")
+    
+    getgenv().settings.theme = Name
 end)
+
 resetDefault:AddToolTip("Resets the Background settings to default")
 
 -- Debug
 local debugSec = infoTab:CreateSection("Debug")
+
 local forceUnload = debugSec:CreateButton("Force Unload", function()
     getgenv().Rogue_AlreadyLoaded = nil
 end)
+
 forceUnload:AddToolTip("Reverts the Rogue_AlreadyLoaded value for debug purposes.")
 
 local deleteUI = debugSec:CreateButton("Delete UI", function()
@@ -527,4 +514,7 @@ game:GetService("RunService").RenderStepped:Connect(function()
     end
 end)
 
+sound:Destroy()
+getgenv().isLoaded = true
 
+notifLib:Notification("Rogue Hub took " .. math.floor(tick() - getgenv().lastTick) .. " seconds to load!", 5)
