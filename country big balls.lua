@@ -34,7 +34,7 @@ local Config = {
 }
 
 local localPlr = game:GetService("Players").LocalPlayer
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kitzoon/Rogue-Hub/main/Extra/BracketV3.lua"))()
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kitzoon/Rogue-Hub/main/Libs/BracketV3.lua"))()
 local window = library:CreateWindow(Config, game:GetService("CoreGui"))
 local mainTab = window:CreateTab("Countryball World")
 
@@ -44,6 +44,12 @@ getgenv().settings = {
     walkSpeedTog = false,
     jumpPowerTog = false,
     jumpPower = 60,
+    fly = false,
+    -- TROLLING
+
+    rpName = " ",
+    changeRPNames = false,
+
     -- THEMES
     theme = "Default",
     color = Color3.fromRGB(201, 144, 150)
@@ -66,34 +72,6 @@ local function saveSettings()
     end
 end
 
--- Load Themes
-if getgenv().settings.color ~= nil then 
-    window:ChangeColor(getgenv().settings.color)
-    print("Loaded ThemeColor")
-end
-
-if getgenv().settings.theme == "Default" then
-    window:SetBackground("2151741365")
-    print("Loaded ThemeBackground")
-elseif getgenv().settings.theme == "Hearts" then
-    window:SetBackground("6073763717")
-    print("Loaded ThemeBackground")
-elseif getgenv().settings.theme == "Abstract" then
-    window:SetBackground("6073743871")
-    print("Loaded ThemeBackground")
-elseif getgenv().settings.theme == "Hexagon" then
-    window:SetBackground("6073628839")
-    print("Loaded ThemeBackground")
-elseif getgenv().settings.theme == "Circles" then
-    window:SetBackground("6071579801")
-    print("Loaded ThemeBackground")
-elseif getgenv().settings.theme == "Lace With Flowers" then
-    window:SetBackground("6071575925")
-    print("Loaded ThemeBackground")
-elseif getgenv().settings.theme == "Floral" then
-    window:SetBackground("5553946656")
-    print("Loaded ThemeBackground")
-end
 
 
 -- Player
@@ -154,6 +132,201 @@ end)
 
 jpSlider:AddToolTip("Change your humanoid's Jump Power value.")
 
+local flyTog = plrSec:CreateToggle("Fly", nil, function(bool)
+    getgenv().settings.fly = bool
+    if bool then
+        -- Credit to Adonis Admin (old)
+        repeat wait()
+        until game.Players.LocalPlayer and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:findFirstChild("Torso") and game.Players.LocalPlayer.Character:findFirstChild("Humanoid")
+        local mouse = game.Players.LocalPlayer:GetMouse()
+        repeat wait() until mouse
+        local plr = game.Players.LocalPlayer
+        if getgenv().settings.fly == false then
+            return
+        end
+        local torso = plr.Character.Torso
+        local flying = true
+        local deb = true
+        local ctrl = {f = 0, b = 0, l = 0, r = 0}
+        local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+        local maxspeed = 50
+        local speed = 0
+    
+        function Fly()
+            local bg = Instance.new("BodyGyro", torso)
+            bg.P = 9e4
+            bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+            bg.cframe = torso.CFrame
+            local bv = Instance.new("BodyVelocity", torso)
+            bv.velocity = Vector3.new(0,0.1,0)
+            bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+            repeat wait()
+                plr.Character.Humanoid.PlatformStand = true
+                if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+                    speed = speed+.5+(speed/maxspeed)
+                    if speed > maxspeed then
+                        speed = maxspeed
+                    end
+                elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
+                    speed = speed-1
+                    if speed < 0 then
+                        speed = 0
+                    end
+                end
+                if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+                    bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+                    lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+                elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
+                    bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+                else
+                    bv.velocity = Vector3.new(0,0.1,0)
+                end
+                bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
+            until not flying
+            ctrl = {f = 0, b = 0, l = 0, r = 0}
+            lastctrl = {f = 0, b = 0, l = 0, r = 0}
+            speed = 0
+            bg:Destroy()
+            bv:Destroy()
+            plr.Character.Humanoid.PlatformStand = false
+        end
+        mouse.KeyDown:connect(function(key)
+            if key:lower() == "e" then
+                if flying then flying = false
+                else
+                    flying = true
+                    Fly()
+                end
+            elseif key:lower() == "w" then
+                ctrl.f = 1
+            elseif key:lower() == "s" then
+                ctrl.b = -1
+            elseif key:lower() == "a" then
+                ctrl.l = -1
+            elseif key:lower() == "d" then
+                ctrl.r = 1
+            end
+        end)
+        mouse.KeyUp:connect(function(key)
+            if key:lower() == "w" then
+                ctrl.f = 0
+            elseif key:lower() == "s" then
+                ctrl.b = 0
+            elseif key:lower() == "a" then
+                ctrl.l = 0
+            elseif key:lower() == "d" then
+                ctrl.r = 0
+            end
+        end)
+        Fly()    
+    end
+end)
+
+flyTog:AddToolTip("Allows you to fly around the map.")
+
+-- Teleports
+
+local tpSec = mainTab:CreateSection("Teleports")
+local tpDrop = tpSec:CreateDropdown("Destination", {"City Spawn", "Lighthouse", "Shipment", "Campgrounds"}, function(option)
+    if option == "City Spawn" then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Map.TPLocations.CityTP.CFrame
+    end
+    if option == "Lighthouse" then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Map.TPLocations.LighthouseTP.CFrame
+    end
+    if option == "Shipment" then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Map.TPLocations.PortTP.CFrame
+    end
+    if option == "Campgrounds" then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Map.TPLocations.CampTP.CFrame
+    end
+end)
+
+tpDrop:AddToolTip("Select a destination to travel across the map to that location instantly.")
+
+-- Currency
+local curSec = mainTab:CreateSection('Currency')
+local infMoney = curSec:CreateTextBox("Amount", "Enter Amount", false, function(str)
+    -- The game handles prices on the Client, therefore a local change is good enough.
+    game:GetService("Players").LocalPlayer.leaderstats.Money.Value = tonumber(str)
+end)
+infMoney:AddToolTip("Sets your money to the amount specified.")
+
+local setMoney = curSec:CreateButton("Set Money", function()
+    -- the amount was already set, this is just a decoration lmao
+end)
+setMoney:AddToolTip("Gives you the amount of money specified.")
+
+local infmoney = curSec:CreateButton("Infinite Money", function()
+    -- Again, the game handles prices on the client.
+    game:GetService("Players").LocalPlayer.leaderstats.Money.Value = math.huge
+end)
+infmoney:AddToolTip("Gives you unlimited in-game money.")
+
+
+-- Items
+
+local itemSec = mainTab:CreateSection("Items")
+local btools = itemSec:CreateButton("F3X Building Tools", function()
+    local args = {
+        [1] = game:GetService("ReplicatedStorage").Tools.Btools,
+        [2] = game:GetService("ReplicatedStorage").Tools.Burger.Cost
+    }
+    
+    game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
+end)
+btools:AddToolTip("Gives you F3X Building Tools that work Serverside. (Must afford Burger)")
+
+local bucket = itemSec:CreateButton("Paint Bucket", function()
+    local args = {
+        [1] = game:GetService("ReplicatedStorage").Tools.Paint,
+        [2] = game:GetService("ReplicatedStorage").Tools.Burger.Cost
+    }
+    
+    game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
+    
+end)
+bucket:AddToolTip("Gives you the Paint Bucket tool, and works Serverside. (Must afford Burger)")
+local weapon = itemSec:CreateButton("M16A1 Weapon", function()
+    local args = {
+        [1] = game:GetService("ReplicatedStorage").Tools.M16A1,
+        [2] = game:GetService("ReplicatedStorage").Tools.Burger.Cost
+    }
+    
+    game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
+    
+    
+end)
+weapon:AddToolTip("Gives you an M16A1, works Serverside. (Must afford Burger)")
+
+local boombox = itemSec:CreateButton("Free Boombox", function()
+    local args = {
+        [1] = game:GetService("ReplicatedStorage").Tools.Burger.Cost,
+        [2] = game:GetService("ReplicatedStorage").Tools.Boombox.Cost
+    }
+    
+    game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
+    
+    
+    
+end)
+boombox:AddToolTip("Gives you a free Boombox, works Serverside, and everyone can hear it. (Must afford Burger)")
+
+
+
+
+-- Trolling
+
+local trollingSec = mainTab:CreateSection("Trolling")
+local displayBox = trollingSec:CreateTextBox("Roleplay Name", "Enter Text", false, function(String)
+    getgenv().settings.rpName = String
+end)
+displayBox:AddToolTip("Sets the text to change everyone's roleplay name.")
+
+local activateRP = trollingSec:CreateToggle("Change RP Names", nil, function(v)
+    getgenv().settings.changeRPNames = v
+end)
+activateRP:AddToolTip("Changes everyone's roleplay name to whatever is in the textbox.")
 -- Extra
 
 local infoTab = window:CreateTab("Extra")
@@ -331,5 +504,17 @@ local deleteUI = debugSec:CreateButton("Delete UI", function()
 end)
 
 deleteUI:AddToolTip("Removes the Rogue Hub UI.")
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if getgenv().settings.changeRPNames then
+        for i, v in pairs(game:GetService("Players"):GetChildren()) do
+            for _, x in pairs(v.Character:GetChildren()) do
+                if x:IsA("Model") and x:FindFirstChild("ServerHandler") then
+                    x:FindFirstChild("ServerHandler"):FireServer(getgenv().settings.rpName)
+                end
+            end
+        end
+    end
+end)
 
 
