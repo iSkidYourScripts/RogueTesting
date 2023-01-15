@@ -270,12 +270,12 @@ local itemSec = mainTab:CreateSection("Items")
 local btools = itemSec:CreateButton("F3X Building Tools", function()
     local args = {
         [1] = game:GetService("ReplicatedStorage").Tools.Btools,
-        [2] = game:GetService("ReplicatedStorage").Tools.Burger.Cost
+        [2] = game:GetService("ReplicatedStorage").VoteValues.V1936
     }
     
     game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
 end)
-btools:AddToolTip("Gives you F3X Building Tools that work Serverside. (Must afford Burger)")
+btools:AddToolTip("Gives you F3X Building Tools that work Serverside.")
 
 local bucket = itemSec:CreateButton("Paint Bucket", function()
     local args = {
@@ -286,23 +286,23 @@ local bucket = itemSec:CreateButton("Paint Bucket", function()
     game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
     
 end)
-bucket:AddToolTip("Gives you the Paint Bucket tool, and works Serverside. (Must afford Burger)")
+bucket:AddToolTip("Gives you the Paint Bucket tool, and works Serverside.")
 local weapon = itemSec:CreateButton("M16A1 Weapon", function()
     local args = {
         [1] = game:GetService("ReplicatedStorage").Tools.M16A1,
-        [2] = game:GetService("ReplicatedStorage").Tools.Burger.Cost
+        [2] = game:GetService("ReplicatedStorage").VoteValues.V1936
     }
     
     game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
     
     
 end)
-weapon:AddToolTip("Gives you an M16A1, works Serverside. (Must afford Burger)")
+weapon:AddToolTip("Gives you an M16A1, works Serverside.")
 
 local boombox = itemSec:CreateButton("Free Boombox", function()
     local args = {
         [1] = game:GetService("ReplicatedStorage").Tools.Boombox,
-        [2] = game:GetService("ReplicatedStorage").Tools.Burger.Cost
+        [2] = game:GetService("ReplicatedStorage").VoteValues.V1936
     }
     
     game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
@@ -310,7 +310,17 @@ local boombox = itemSec:CreateButton("Free Boombox", function()
     
     
 end)
-boombox:AddToolTip("Gives you a free Boombox, works Serverside, and everyone can hear it. (Must afford Burger)")
+boombox:AddToolTip("Gives you a free Boombox, works Serverside, and everyone can hear it.")
+
+itemSec:CreateButton("Give All Items", function()
+    for i, v in pairs(game:GetService("ReplicatedStorage").Tools:GetChildren()) do
+        local args = {
+            [1] = v,
+            [2] = game:GetService("ReplicatedStorage").VoteValues.V1936
+        }
+        game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
+    end
+end)
 
 
 
