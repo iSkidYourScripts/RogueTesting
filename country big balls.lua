@@ -38,6 +38,9 @@ getgenv().settings = {
 
     rpName = "",
     changeRPNames = false,
+    tpRandom = false,
+
+    tpDelay = 1,
 
     -- THEMES
     theme = "Default",
@@ -213,6 +216,7 @@ flyTog:AddToolTip("Allows you to fly around the map.")
 -- Teleports
 
 local tpSec = mainTab:CreateSection("Teleports")
+
 local tpDrop = tpSec:CreateDropdown("Destination", {"City Spawn", "Lighthouse", "Shipment", "Campgrounds"}, function(option)
     if option == "City Spawn" then
         game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Map.TPLocations.CityTP.CFrame
@@ -228,13 +232,14 @@ local tpDrop = tpSec:CreateDropdown("Destination", {"City Spawn", "Lighthouse", 
     end
 end)
 
-tpDrop:AddToolTip("Select a destination to travel across the map to that location instantly.")
+tpDrop:AddToolTip("Teleports you to the selected destination instantly.")
 
 -- Currency
 local curSec = mainTab:CreateSection('Currency')
 
 local amountOfMoney = curSec:CreateTextBox("Amount", "Enter Amount", false, function(str)
     getgenv().settings.moneyAmount = str
+    saveSettings()
 end)
 
 local setMoney = curSec:CreateButton("Set Money", function()
@@ -256,30 +261,30 @@ local itemSec = mainTab:CreateSection("Items")
 local btools = itemSec:CreateButton("F3X Building Tools", function()
     local args = {
         [1] = game:GetService("ReplicatedStorage").Tools.Btools,
-        [2] = game:GetService("ReplicatedStorage").Tools.Burger.Cost
+        [2] = game:GetService("ReplicatedStorage").VoteValues.V1936
     }
     
     game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
 end)
 
-btools:AddToolTip("Gives you F3X Building Tools that work Serverside. (Must afford Burger)")
+btools:AddToolTip("Gives you F3X Building Tools that work Serverside.")
 
 local bucket = itemSec:CreateButton("Paint Bucket", function()
     local args = {
         [1] = game:GetService("ReplicatedStorage").Tools.Paint,
-        [2] = game:GetService("ReplicatedStorage").Tools.Burger.Cost
+        [2] = game:GetService("ReplicatedStorage").VoteValues.V1936
     }
     
     game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
     
 end)
 
-bucket:AddToolTip("Gives you the Paint Bucket tool, and works Serverside. (Must afford Burger)")
+bucket:AddToolTip("Gives you the Paint Bucket tool, and works Serverside.")
 
 local weapon = itemSec:CreateButton("M16A1 Weapon", function()
     local args = {
         [1] = game:GetService("ReplicatedStorage").Tools.M16A1,
-        [2] = game:GetService("ReplicatedStorage").Tools.Burger.Cost
+        [2] = game:GetService("ReplicatedStorage").VoteValues.V1936
     }
     
     game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
@@ -287,12 +292,12 @@ local weapon = itemSec:CreateButton("M16A1 Weapon", function()
     
 end)
 
-weapon:AddToolTip("Gives you an M16A1, works Serverside. (Must afford Burger)")
+weapon:AddToolTip("Gives you an M16A1, works Serverside.")
 
 local boombox = itemSec:CreateButton("Free Boombox", function()
     local args = {
         [1] = game:GetService("ReplicatedStorage").Tools.Boombox,
-        [2] = game:GetService("ReplicatedStorage").Tools.Burger.Cost
+        [2] = game:GetService("ReplicatedStorage").VoteValues.V1936
     }
     
     game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
@@ -317,6 +322,26 @@ local activateRP = trollingSec:CreateToggle("Change RP Names", false, function(v
 end)
 
 activateRP:AddToolTip("Changes everyone's roleplay name to whatever is in the textbox.")
+
+local teleportRandom = trollingSec:CreateToggle("Teleport Random Players", false, function(v)
+    getgenv().settings.tpRandom = v
+    
+    while getgenv().settings.tpRandom and wait(getgenv().settings.tpDelay) do
+        local num = math.random(1, #game:GetService("Players"):GetChildren())
+        local v = game:GetService("Players"):GetPlayers()[num]
+        
+        if localPlr.Character and v.Character and localPlr.Character:FindFirstChild("HumanoidRootPart") and v.Character:FindFirstChild("HumanoidRootPart") then
+            localPlr.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame
+        end
+    end
+end)
+
+local tpDelay = trollingSec:CreateSlider("Teleport Delay", 0,5,getgenv().settings.tpDelay or 1,true, function(value)
+	getgenv().settings.tpDelay = value
+    saveSettings()
+end)
+
+teleportRandom:AddToolTip("Teleports to a random player every second, useful for trolling.")
 
 -- Extra
 
@@ -368,6 +393,12 @@ infoSec:CreateButton("Rogue Hub Plus: StoneNicolas93#0001", function()
     setclipboard("StoneNicolas93#0001")
 
     notifLib:Notification("Copied StoneNicolas discord username and tag to your clipboard.", 5)
+end)
+
+infoSec:CreateButton("Most Features: BluBambi3#9867", function()
+    setclipboard("BluBambi#9867")
+
+    notifLib:Notification("Copied BluBambi discord username and tag to your clipboard.", 5)
 end)
 
 infoSec:CreateButton("Help with a lot: Kyron#6083", function()
@@ -505,8 +536,10 @@ deleteUI:AddToolTip("Removes the Rogue Hub UI.")
 game:GetService("RunService").RenderStepped:Connect(function()
     if getgenv().settings.changeRPNames then
         for i, v in pairs(game:GetService("Players"):GetChildren()) do
+            if not v.Character or not getgenv().settings.changeRPNames then return end
+            
             for _, x in pairs(v.Character:GetChildren()) do
-                if x:IsA("Model") and x:FindFirstChild("ServerHandler") then
+                if getgenv().settings.changeRPNames and x:IsA("Model") and x:FindFirstChild("ServerHandler") then
                     x:FindFirstChild("ServerHandler"):FireServer(getgenv().settings.rpName)
                 end
             end
