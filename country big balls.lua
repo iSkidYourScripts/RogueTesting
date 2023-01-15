@@ -301,8 +301,8 @@ weapon:AddToolTip("Gives you an M16A1, works Serverside. (Must afford Burger)")
 
 local boombox = itemSec:CreateButton("Free Boombox", function()
     local args = {
-        [1] = game:GetService("ReplicatedStorage").Tools.Burger.Cost,
-        [2] = game:GetService("ReplicatedStorage").Tools.Boombox.Cost
+        [1] = game:GetService("ReplicatedStorage").Tools.Boombox,
+        [2] = game:GetService("ReplicatedStorage").Tools.Burger.Cost
     }
     
     game:GetService("ReplicatedStorage").BuyTool:InvokeServer(unpack(args))
